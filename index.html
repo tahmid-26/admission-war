@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admission Study Tracker</title>
+<style>
+:root{--bg:#eef3f1;--card:#fff;--ink:#1b2a2e;--mut:#5d6f73;--ac:#1f6f6b;--acs:#d6ebe8;--bd:#cfdcd9;--bad:#b3402a}
+@media(prefers-color-scheme:dark){:root{--bg:#121a1c;--card:#1b2629;--ink:#e6efee;--mut:#9ab0b3;--ac:#4fb3ac;--acs:#21393a;--bd:#2c3d40;--bad:#e07a62}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif;padding-bottom:40px}
+main{max-width:720px;margin:0 auto;padding:12px}
+h1{font-size:1.25rem;margin:8px 0}
+button,select,input[type=text],input[type=number]{font:inherit;font-size:.95rem;font-family:system-ui,sans-serif;padding:7px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--ink)}
+button{cursor:pointer}button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+#nav,.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.card,.blk,.row{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0}
+.blk{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.blk.dn{background:var(--acs);color:var(--mut)}.blk.dn label{text-decoration:line-through}
+.t{font-family:system-ui,sans-serif;font-weight:600;color:var(--ac);margin:0 8px 0 6px}
+.bar{height:8px;background:var(--acs);border-radius:4px;margin-top:8px}.bar i{display:block;height:100%;background:var(--ac);border-radius:4px}
+.row{display:grid;grid-template-columns:1fr 54px 54px 54px;align-items:center;margin:4px 0;padding:6px 12px}
+.row input{width:20px;height:20px;justify-self:center}.hdr{display:grid;grid-template-columns:1fr 54px 54px 54px;font:.8rem system-ui,sans-serif;color:var(--mut);padding:0 12px;text-align:center}.hdr span:first-child{text-align:left}
+em{display:block;font-size:.8rem;color:var(--mut)}
+.f{display:flex;gap:6px;flex-wrap:wrap}.f input[type=text]{flex:1;min-width:140px}
+.big{font:700 2rem system-ui,sans-serif;color:var(--ac)}.mut{color:var(--mut);font-size:.85rem}
+.x{background:none;border:none;color:var(--bad);padding:2px 8px}
+table{width:100%;border-collapse:collapse}td{padding:5px 4px;border-bottom:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<main>
+<h1>Admission Study Tracker</h1>
+<div id="nav"></div>
+<div id="app"></div>
+</main>
+<script src="data.js"></script>
+<script>
+const D=window.DATA,K="studyapp.v1";
+let S={};try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
+["ch","days","bl","er","sc"].forEach(k=>S[k]=S[k]||(k=="bl"||k=="er"||k=="sc"?[]:{}));
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert("Could not save in this browser. Use Export to keep your data.")}};
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const day=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const dd=()=>S.days[day()]=S.days[day()]||{c:[],f:{},bad:false};
+const cs=(s,i)=>{const k=s+":"+D.ch[s][i][0];if(!S.ch[k]){const t=D.ch[s][i][1]||0;S.ch[k]=[t>0,t>1,false]}return S.ch[k]};
+const left=d=>Math.ceil((new Date(d+"T00:00:00")-new Date())/864e5);
+const subOpts=()=>Object.entries(D.sub).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+const TABS={today:"Today",ch:"Chapters",bl:"Backlog",er:"Errors",ex:"Exams & backup"};
+let tab="today",sf="P",tm=0,ti;
+const go=t=>{tab=t;render()};
+const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const pct=s=>Math.round(D.ch[s].filter((c,i)=>cs(s,i)[1]).length/D.ch[s].length*100);
+
+function render(){
+  $("#nav").innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?"on":""}" onclick="go('${k}')">${v}</button>`).join("");
+  $("#app").innerHTML={today:vToday,ch:vCh,bl:vBl,er:vEr,ex:vEx}[tab]();
+}
+function vToday(){
+  const d=dd(),B=D.blocks,vis=B.map((b,i)=>i).filter(i=>!d.bad||B[i][3]),n=vis.filter(i=>d.c[i]).length;
+  const nx=D.exams.filter(e=>left(e[1])>=0).slice(0,3).map(e=>`${esc(e[0])}: ${left(e[1])}d`).join(" | ");
+  const open=S.bl.filter(b=>!b.d).length;
+  return `<div class="card"><b>${new Date().toDateString()}</b><div class="mut">${nx}</div>
+  <div class="big">${n}/${vis.length}</div><div class="bar"><i style="width:${vis.length?n/vis.length*100:0}%"></i></div>
+  <label class="mut"><input type="checkbox" ${d.bad?"checked":""} onchange="dd().bad=this.checked;save();render()"> Bad-day minimum (Math, Physics, Chemistry, sleep only)</label>
+  <div class="mut">Backlog open: ${open}</div></div>`+
+  vis.map(i=>{const b=B[i],s=b[2]&&D.sub[b[2]]?b[2]:"";
+    const sel=s?`<select aria-label="Chapter" onchange="dd().f[${i}]=this.value;save()"><option value="">Chapter today...</option>${D.ch[s].map((c,j)=>({c,j})).filter(o=>!cs(s,o.j)[1]||o.c[0]==d.f[i]).map(o=>`<option ${o.c[0]==d.f[i]?"selected":""}>${esc(o.c[0])}</option>`).join("")}</select>`:"";
+    return `<div class="blk ${d.c[i]?"dn":""}"><label><input type="checkbox" ${d.c[i]?"checked":""} onchange="dd().c[${i}]=this.checked;save();render()"><span class="t">${b[0]}</span>${esc(b[1])}</label>${sel}</div>`}).join("")+
+  `<div class="card"><b>Focus timer</b> <span class="big" id="tm">${tm>0?fmt(tm):"0:00"}</span>
+  <div class="f"><button onclick="startT(25)">25 min</button><button onclick="startT(50)">50 min</button><button onclick="startT(0)">Stop</button></div>
+  <div class="mut">Phone in another room. Urge to scroll? Write it on paper and do 10 more minutes first.</div></div>`;
+}
+function startT(m){clearInterval(ti);tm=m*60;if(!m){$("#tm").textContent="0:00";return}
+  ti=setInterval(()=>{tm--;const e=$("#tm");if(e)e.textContent=fmt(Math.max(tm,0));if(tm<=0){clearInterval(ti);alert("Block done. Take a 5-10 min break, phone still away.")}},1000)}
+function vCh(){
+  return `<div class="tabs">${Object.entries(D.sub).map(([k,v])=>`<button class="${k==sf?"on":""}" onclick="sf='${k}';render()">${v} ${pct(k)}%</button>`).join("")}</div>
+  <div class="hdr"><span>Practiced % shown on tabs</span><span>Learned</span><span>Practiced</span><span>Revised</span></div>`+
+  D.ch[sf].map((c,i)=>{const v=cs(sf,i);return `<div class="row"><span>${esc(c[0])}${c[2]?`<em>${esc(c[2])}</em>`:""}</span>${[0,1,2].map(j=>`<input type="checkbox" aria-label="${["Learned","Practiced","Revised"][j]}" ${v[j]?"checked":""} onchange="cs('${sf}',${i})[${j}]=this.checked;save();render()">`).join("")}</div>`}).join("");
+}
+function vBl(){
+  return `<div class="card"><b>Missed or partial live classes</b><div class="f"><select id="bs">${subOpts()}</select><input type="text" id="bt" placeholder="Topic, e.g. Organic-03"><button class="pri" onclick="add('bl','bs','bt')">Add</button></div></div>`+
+  (S.bl.length?S.bl.map((b,i)=>`<div class="blk ${b.d?"dn":""}"><label><input type="checkbox" ${b.d?"checked":""} onchange="S.bl[${i}].d=this.checked;save();render()"><span class="t">${D.sub[b.s]}</span>${esc(b.t)}</label><button class="x" aria-label="Delete" onclick="del('bl',${i})">Delete</button></div>`).join(""):`<div class="card mut">Nothing in backlog. Add a topic whenever you miss part of a live class.</div>`);
+}
+function vEr(){
+  const o=S.er.filter(e=>!e.d).length;
+  return `<div class="card"><b>Error log</b> <span class="mut">${o} to re-attempt</span><div class="f"><select id="es">${subOpts()}</select><input type="text" id="et" placeholder="Question / topic"><select id="ec"><option>Concept</option><option>Formula</option><option>Calculation</option><option>Careless</option></select><button class="pri" onclick="add('er','es','et',{c:$('#ec').value})">Add</button></div><div class="mut">Review on Fridays. Tick when you get it right on re-attempt.</div></div>`+
+  S.er.map((e,i)=>`<div class="blk ${e.d?"dn":""}"><label><input type="checkbox" ${e.d?"checked":""} onchange="S.er[${i}].d=this.checked;save();render()"><span class="t">${D.sub[e.s]}</span>${esc(e.t)} <span class="mut">(${e.c})</span></label><button class="x" aria-label="Delete" onclick="del('er',${i})">Delete</button></div>`).join("");
+}
+function add(k,sid,tid,x){const t=$("#"+tid).value.trim();if(!t)return;S[k].unshift(Object.assign({s:$("#"+sid).value,t,d:false},x||{}));save();render()}
+function del(k,i){S[k].splice(i,1);save();render()}
+function vEx(){
+  return `<div class="card"><b>Exam countdown</b> <span class="mut">(dates may change; edit data.js)</span><table>${D.exams.map(e=>`<tr><td>${esc(e[0])}</td><td>${e[1]}</td><td><b>${left(e[1])}</b> days</td></tr>`).join("")}</table></div>
+  <div class="card"><b>Exam scores</b> <div class="mut">Targets: ${D.targets.map(t=>t[0]+" "+t[1]+"%").join(", ")}</div>
+  <div class="f"><input type="text" id="sn" placeholder="Exam name"><input type="number" id="sp" placeholder="%" min="0" max="100" style="width:80px"><button class="pri" onclick="addSc()">Add</button></div>
+  <table>${S.sc.map((s,i)=>`<tr><td>${esc(s.n)}</td><td>${esc(s.p)}%</td><td>${s.dt}</td><td><button class="x" aria-label="Delete" onclick="del('sc',${i})">Delete</button></td></tr>`).join("")}</table></div>
+  <div class="card"><b>Backup</b><div class="mut">Progress is saved in this browser only. Export weekly and keep the file (or commit it to your repo). Import to restore on another device.</div>
+  <div class="f"><button onclick="exp()">Export progress</button><input type="file" id="im" accept=".json" onchange="imp(this.files[0])"><button onclick="if(confirm('Erase all progress?')){S={};localStorage.removeItem('${K}');location.reload()}">Reset</button></div></div>`;
+}
+function addSc(){const n=$("#sn").value.trim(),p=$("#sp").value;if(!n||p==="")return;S.sc.unshift({n,p,dt:day()});save();render()}
+function exp(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:"application/json"}));a.download="study-progress-"+day()+".json";a.click()}
+function imp(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(typeof o!="object"||!o.ch)throw 0;S=o;save();location.reload()}catch(e){alert("That file is not a valid progress export.")}};r.readAsText(f)}
+render();
+</script>
+</body>
+</html>
