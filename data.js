@@ -8,8 +8,9 @@ window.DATA = {
     ["BUTEX", "2027-01-29"], ["GST (tentative)", "2027-03-19"]
   ],
   targets: [["2026-10-22", 50], ["2026-11-14", 65], ["2026-12-11", 75], ["2027-01-08", 80]],
-  // [time, label, subject (M/P/C pick a chapter; B,L,E,"" none), minimum-day flag]
-  blocks: [
+  // Block format: [time, label, subject (M/P/C pick a chapter; others none), minimum-day flag]. "{cls}" and "{sleep}" are computed from the class start time and duration chosen on each day.
+  // Normal day (no live class)
+  blocksN: [
     ["05:45", "Wake, Fajr, water, 10-min walk. No phone for 60 min", "", 1],
     ["06:15-08:15", "Math: 25% learn, 75% questions", "M", 1],
     ["09:00-11:00", "Physics", "P", 1],
@@ -18,10 +19,23 @@ window.DATA = {
     ["14:30-15:15", "Organic chemistry", "C", 0],
     ["15:15-16:00", "Error log + mixed timed practice", "E", 0],
     ["16:00-17:30", "Asr, walk / exercise, social window 1 (20 min)", "", 0],
-    ["17:30-19:30", "Maghrib, then backlog from missed live classes", "B", 0],
-    ["19:30-21:00", "Isha, dinner, social window 2 (20 min)", "", 0],
-    ["21:00-22:30", "ACS live class (add anything you miss to Backlog)", "L", 0],
+    ["17:30-19:30", "Maghrib, then backlog from missed classes", "B", 0],
+    ["19:30-21:30", "Isha, dinner, social window 2 (20 min)", "", 0],
     ["22:45", "Plan tomorrow on paper, phone out of room, sleep", "", 1]
+  ],
+  // Class day (ACS live class ~3h15, ends after midnight, so the day starts later to protect ~7h sleep)
+  blocksC: [
+    ["07:30", "Wake (Fajr first), water, walk. No phone for 60 min", "", 1],
+    ["08:15-10:15", "Math: 25% learn, 75% questions", "M", 1],
+    ["10:30-12:15", "Physics", "P", 1],
+    ["12:15-14:00", "Dhuhr, lunch, nap 20 min max", "", 0],
+    ["14:00-15:45", "Chemistry (physical / inorganic)", "C", 1],
+    ["15:45-16:30", "Organic chemistry", "C", 0],
+    ["16:30-17:30", "Asr, walk, social window 1 (20 min)", "", 0],
+    ["17:30-18:30", "Error log + timed practice", "E", 0],
+    ["18:30-20:45", "Maghrib, dinner, social window 2, rest before class", "", 0],
+    ["{cls}", "ACS live class (add anything you miss to Backlog)", "L", 1],
+    ["{sleep}", "Plan tomorrow, phone out of room, sleep", "", 1]
   ],
   ch: {
     P: [["Physical World & Measurement",0],["Vector",2],["Dynamics",2],["Newtonian Mechanics",1,"revisit, not fully done in HSC"],["Work, Power & Energy",0],["Gravitation",0],["Material Structural Property",0],["Periodic Motion",0],["Waves",1],["Ideal Gas & Gas Kinematics",0],["Thermodynamics",0],["Static Electricity",0],["Current Electricity",0],["Magnetic Effects of Current",0],["Electromagnetic Induction",0],["Geometrical Optics",0],["Physical Optics",0],["Modern Physics",0],["Atomic Model & Nuclear",0],["Semiconductor & Electronics",0],["Astronomy",0]],

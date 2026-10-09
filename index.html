@@ -5,101 +5,139 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Admission Study Tracker</title>
 <style>
-:root{--bg:#eef3f1;--card:#fff;--ink:#1b2a2e;--mut:#5d6f73;--ac:#1f6f6b;--acs:#d6ebe8;--bd:#cfdcd9;--bad:#b3402a}
-@media(prefers-color-scheme:dark){:root{--bg:#121a1c;--card:#1b2629;--ink:#e6efee;--mut:#9ab0b3;--ac:#4fb3ac;--acs:#21393a;--bd:#2c3d40;--bad:#e07a62}}
+:root{--bg:#e9f0ee;--card:#fff;--ink:#17262a;--mut:#5b6e72;--ac:#16706a;--acs:#d3e9e6;--bd:#cbdad7;--bad:#b3402a;--hd:#0f3d3a}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1517;--card:#172225;--ink:#e6efee;--mut:#97aeb1;--ac:#4fb3ac;--acs:#1f3637;--bd:#2a3c3f;--bad:#e07a62;--hd:#091214}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif;padding-bottom:40px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:48px}
+header{background:var(--hd);color:#e6efee;padding:14px 12px 0}
+header h1{max-width:720px;margin:0 auto 10px;font:700 1.2rem Georgia,serif}
+#nav{max-width:720px;margin:0 auto;display:flex;gap:2px;overflow-x:auto}
+#nav button{background:none;border:none;color:#9fc0bd;padding:10px 12px;border-bottom:3px solid transparent;border-radius:0;white-space:nowrap}
+#nav button.on{color:#fff;border-color:#5fd0c6;font-weight:600}
 main{max-width:720px;margin:0 auto;padding:12px}
-h1{font-size:1.25rem;margin:8px 0}
-button,select,input[type=text],input[type=number]{font:inherit;font-size:.95rem;font-family:system-ui,sans-serif;padding:7px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--ink)}
-button{cursor:pointer}button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+button,select,input,.btn{font:inherit;font-size:.92rem;padding:8px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--ink)}
+button,.btn{cursor:pointer;display:inline-block}
+.pri{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600}
+.ghost{background:var(--acs);border-color:var(--acs)}
 :focus-visible{outline:3px solid var(--ac);outline-offset:2px}
-#nav,.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
-.card,.blk,.row{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0}
-.blk{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.card,.blk,.row{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin:10px 0}
+.card h2{font:700 1rem Georgia,serif;margin:0 0 6px}
+.blk{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 14px;margin:6px 0}
 .blk.dn{background:var(--acs);color:var(--mut)}.blk.dn label{text-decoration:line-through}
-.t{font-family:system-ui,sans-serif;font-weight:600;color:var(--ac);margin:0 8px 0 6px}
-.bar{height:8px;background:var(--acs);border-radius:4px;margin-top:8px}.bar i{display:block;height:100%;background:var(--ac);border-radius:4px}
-.row{display:grid;grid-template-columns:1fr 54px 54px 54px;align-items:center;margin:4px 0;padding:6px 12px}
-.row input{width:20px;height:20px;justify-self:center}.hdr{display:grid;grid-template-columns:1fr 54px 54px 54px;font:.8rem system-ui,sans-serif;color:var(--mut);padding:0 12px;text-align:center}.hdr span:first-child{text-align:left}
-em{display:block;font-size:.8rem;color:var(--mut)}
-.f{display:flex;gap:6px;flex-wrap:wrap}.f input[type=text]{flex:1;min-width:140px}
-.big{font:700 2rem system-ui,sans-serif;color:var(--ac)}.mut{color:var(--mut);font-size:.85rem}
+.blk input[type=checkbox],.row input{width:20px;height:20px;accent-color:var(--ac);vertical-align:middle}
+.t{font-weight:600;color:var(--ac);margin:0 8px 0 8px;font-variant-numeric:tabular-nums}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.f{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.f input[type=text]{flex:1;min-width:130px}
+.mut{color:var(--mut);font-size:.85rem}.bar{height:8px;background:var(--acs);border-radius:4px}.bar i{display:block;height:100%;background:var(--ac);border-radius:4px}
+.rings{display:flex;gap:8px;flex-wrap:wrap}.rings button{display:flex;flex-direction:column;align-items:center;padding:8px 14px;flex:1;min-width:90px}
+.rings button.on{border-color:var(--ac);background:var(--acs)}
+.row{display:grid;grid-template-columns:1fr 56px 56px 56px;align-items:center;margin:4px 0;padding:7px 14px}
+.row input{justify-self:center}.hdr{display:grid;grid-template-columns:1fr 56px 56px 56px;font-size:.8rem;color:var(--mut);padding:6px 14px 0;text-align:center}.hdr span:first-child{text-align:left}
+em{display:block;font-size:.8rem;color:var(--mut);font-style:normal}
 .x{background:none;border:none;color:var(--bad);padding:2px 8px}
-table{width:100%;border-collapse:collapse}td{padding:5px 4px;border-bottom:1px solid var(--bd)}
+table{width:100%;border-collapse:collapse}td{padding:6px 4px;border-bottom:1px solid var(--bd)}
+.warn{color:var(--bad)}
 </style>
 </head>
 <body>
-<main>
-<h1>Admission Study Tracker</h1>
-<div id="nav"></div>
-<div id="app"></div>
-</main>
+<header><h1>Admission Study Tracker</h1><div id="nav"></div></header>
+<main id="app"></main>
 <script src="data.js"></script>
 <script>
 const D=window.DATA,K="studyapp.v1";
 let S={};try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
-["ch","days","bl","er","sc"].forEach(k=>S[k]=S[k]||(k=="bl"||k=="er"||k=="sc"?[]:{}));
+["ch","days","pd","wt"].forEach(k=>S[k]=S[k]||{});["bl","er","sc"].forEach(k=>S[k]=S[k]||[]);
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert("Could not save in this browser. Use Export to keep your data.")}};
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const day=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
-const dd=()=>S.days[day()]=S.days[day()]||{c:[],f:{},bad:false};
+const today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const addD=(s,n)=>{const d=new Date(s+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+const wk=s=>addD(s,-((new Date(s+"T00:00:00Z").getUTCDay()+1)%7));
+const fd=s=>new Date(s+"T00:00:00Z").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"});
+let cur=today(),wv=wk(today()),tab="today",sf="P",tm=0,ti;
+const fix=d=>{if(Array.isArray(d.c))d.c={};d.c=d.c||{};d.f=d.f||{};d.tk=d.tk||[];if(d.cls===undefined)d.cls=true;d.dur=d.dur||195;d.st=d.st||"21:00";return d};
+const dd=(s=cur)=>fix(S.days[s]=S.days[s]||{});
+const mm=t=>{const[a,b]=t.split(":");return+a*60+ +b},hm=m=>{m=(m%1440+1440)%1440;return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0")};
+const blocks=d=>d.cls?D.blocksC:D.blocksN,pre=d=>d.cls?"c":"n";
+const vis=d=>blocks(d).map((b,i)=>i).filter(i=>!d.bad||blocks(d)[i][3]);
+const pctOf=d=>{fix(d);const v=vis(d);return v.length?Math.round(v.filter(i=>d.c[pre(d)+i]).length/v.length*100):0};
+const times=(d,t)=>{const e=mm(d.st)+d.dur;return t.replace("{cls}",d.st+"-"+hm(e)).replace("{sleep}",hm(e+15))};
 const cs=(s,i)=>{const k=s+":"+D.ch[s][i][0];if(!S.ch[k]){const t=D.ch[s][i][1]||0;S.ch[k]=[t>0,t>1,false]}return S.ch[k]};
 const left=d=>Math.ceil((new Date(d+"T00:00:00")-new Date())/864e5);
-const subOpts=()=>Object.entries(D.sub).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
-const TABS={today:"Today",ch:"Chapters",bl:"Backlog",er:"Errors",ex:"Exams & backup"};
-let tab="today",sf="P",tm=0,ti;
-const go=t=>{tab=t;render()};
-const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
 const pct=s=>Math.round(D.ch[s].filter((c,i)=>cs(s,i)[1]).length/D.ch[s].length*100);
-
+const subOpts=()=>Object.entries(D.sub).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+const ring=(p,l,sz=84)=>`<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" role="img" aria-label="${l} ${p}%"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--acs)" stroke-width="12"/><circle cx="50" cy="50" r="40" fill="none" stroke="var(--ac)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${Math.min(p,100)*2.513} 251.3" transform="rotate(-90 50 50)"/><text x="50" y="57" text-anchor="middle" font-size="24" font-weight="700" fill="var(--ink)">${p}%</text></svg>`;
+const TABS={today:"Day",hist:"History",wk:"Weekly targets",ch:"Chapters",bl:"Backlog",er:"Errors",ex:"Exams & backup"};
+const go=t=>{tab=t;render()},setCur=v=>{if(v)cur=v;tab="today";render()};
 function render(){
   $("#nav").innerHTML=Object.entries(TABS).map(([k,v])=>`<button class="${k==tab?"on":""}" onclick="go('${k}')">${v}</button>`).join("");
-  $("#app").innerHTML={today:vToday,ch:vCh,bl:vBl,er:vEr,ex:vEx}[tab]();
+  $("#app").innerHTML={today:vDay,hist:vHist,wk:vWk,ch:vCh,bl:vBl,er:vEr,ex:vEx}[tab]();
 }
-function vToday(){
-  const d=dd(),B=D.blocks,vis=B.map((b,i)=>i).filter(i=>!d.bad||B[i][3]),n=vis.filter(i=>d.c[i]).length;
-  const nx=D.exams.filter(e=>left(e[1])>=0).slice(0,3).map(e=>`${esc(e[0])}: ${left(e[1])}d`).join(" | ");
-  const open=S.bl.filter(b=>!b.d).length;
-  return `<div class="card"><b>${new Date().toDateString()}</b><div class="mut">${nx}</div>
-  <div class="big">${n}/${vis.length}</div><div class="bar"><i style="width:${vis.length?n/vis.length*100:0}%"></i></div>
-  <label class="mut"><input type="checkbox" ${d.bad?"checked":""} onchange="dd().bad=this.checked;save();render()"> Bad-day minimum (Math, Physics, Chemistry, sleep only)</label>
-  <div class="mut">Backlog open: ${open}</div></div>`+
-  vis.map(i=>{const b=B[i],s=b[2]&&D.sub[b[2]]?b[2]:"";
-    const sel=s?`<select aria-label="Chapter" onchange="dd().f[${i}]=this.value;save()"><option value="">Chapter today...</option>${D.ch[s].map((c,j)=>({c,j})).filter(o=>!cs(s,o.j)[1]||o.c[0]==d.f[i]).map(o=>`<option ${o.c[0]==d.f[i]?"selected":""}>${esc(o.c[0])}</option>`).join("")}</select>`:"";
-    return `<div class="blk ${d.c[i]?"dn":""}"><label><input type="checkbox" ${d.c[i]?"checked":""} onchange="dd().c[${i}]=this.checked;save();render()"><span class="t">${b[0]}</span>${esc(b[1])}</label>${sel}</div>`}).join("")+
-  `<div class="card"><b>Focus timer</b> <span class="big" id="tm">${tm>0?fmt(tm):"0:00"}</span>
-  <div class="f"><button onclick="startT(25)">25 min</button><button onclick="startT(50)">50 min</button><button onclick="startT(0)">Stop</button></div>
-  <div class="mut">Phone in another room. Urge to scroll? Write it on paper and do 10 more minutes first.</div></div>`;
+function vDay(){
+  const d=dd(),B=blocks(d),v=vis(d),p=pctOf(d),t=today(),rel=cur==t?"Today":cur<t?"Past day":"Planned day";
+  const nx=D.exams.filter(e=>left(e[1])>=0).slice(0,3).map(e=>`${esc(e[0])} ${left(e[1])}d`).join(" | ");
+  const end=mm(d.st)+d.dur,late=end>1440+10;
+  return `<div class="card"><div class="top">${ring(p,"Day progress",96)}<div style="flex:1;min-width:180px"><b>${fd(cur)}</b> <span class="mut">${rel}</span>
+  <div class="f"><button onclick="setCur(addD(cur,-1))" aria-label="Previous day">&lt;</button><input type="date" value="${cur}" onchange="setCur(this.value)"><button onclick="setCur(addD(cur,1))" aria-label="Next day">&gt;</button><button class="ghost" onclick="setCur(today())">Today</button></div>
+  <div class="mut">${nx}</div></div></div>
+  <label class="mut"><input type="checkbox" ${d.bad?"checked":""} onchange="dd().bad=this.checked;save();render()"> Bad-day minimum</label></div>
+  <div class="card"><label><input type="checkbox" ${d.cls?"checked":""} onchange="dd().cls=this.checked;save();render()"> <b>ACS live class this day</b></label>
+  ${d.cls?`<div class="f"><input type="time" value="${d.st}" onchange="dd().st=this.value||'21:00';save();render()"><select onchange="dd().dur=+this.value;save();render()">${[[180,"3 h"],[195,"3 h 15"],[210,"3 h 30"],[240,"4 h"]].map(o=>`<option value="${o[0]}" ${o[0]==d.dur?"selected":""}>${o[1]}</option>`).join("")}</select></div>
+  <div class="mut">Class ends ${hm(end)}. Sleep by ${hm(end+15)}; for 7 h of sleep, wake at ${hm(end+15+420)}.${late?` <span class="warn">Very late. Consider watching the last part as a recording.</span>`:""}</div>`:`<div class="mut">Normal day: wake 05:45, sleep 22:45 (7 h).</div>`}</div>`+
+  v.map(i=>{const b=B[i],s=b[2]&&D.sub[b[2]]?b[2]:"",k=pre(d)+i;
+    const sel=s?`<select aria-label="Chapter" onchange="dd().f['${k}']=this.value;save()"><option value="">Chapter...</option>${D.ch[s].map((c,j)=>({c,j})).filter(o=>!cs(s,o.j)[1]||o.c[0]==d.f[k]).map(o=>`<option ${o.c[0]==d.f[k]?"selected":""}>${esc(o.c[0])}</option>`).join("")}</select>`:"";
+    return `<div class="blk ${d.c[k]?"dn":""}"><label><input type="checkbox" ${d.c[k]?"checked":""} onchange="dd().c['${k}']=this.checked;save();render()"><span class="t">${times(d,b[0])}</span>${esc(b[1])}</label>${sel}</div>`}).join("")+
+  `<div class="card"><h2>Extra tasks for this day</h2><div class="f"><select id="ks">${subOpts()}</select><input type="text" id="kt" placeholder="e.g. Mock test, Integration set 2"><button class="pri" onclick="addTk()">Add</button></div>`+
+  (d.tk.map((x,i)=>`<div class="blk ${x.d?"dn":""}"><label><input type="checkbox" ${x.d?"checked":""} onchange="dd().tk[${i}].d=this.checked;save();render()"><span class="t">${D.sub[x.s]}</span>${esc(x.t)}</label><button class="x" onclick="dd().tk.splice(${i},1);save();render()">Delete</button></div>`).join("")||`<div class="mut">Plan ahead by opening a future date, choosing chapters, and adding tasks.</div>`)+`</div>
+  <div class="card"><h2>Focus timer <span id="tm">${tm>0?fmt(tm):"0:00"}</span></h2><div class="f"><button onclick="startT(25)">25 min</button><button onclick="startT(50)">50 min</button><button onclick="startT(0)">Stop</button></div><div class="mut">Phone in another room. Urge to scroll? Write it down and do 10 more minutes first.</div></div>`;
 }
+const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
 function startT(m){clearInterval(ti);tm=m*60;if(!m){$("#tm").textContent="0:00";return}
   ti=setInterval(()=>{tm--;const e=$("#tm");if(e)e.textContent=fmt(Math.max(tm,0));if(tm<=0){clearInterval(ti);alert("Block done. Take a 5-10 min break, phone still away.")}},1000)}
-function vCh(){
-  return `<div class="tabs">${Object.entries(D.sub).map(([k,v])=>`<button class="${k==sf?"on":""}" onclick="sf='${k}';render()">${v} ${pct(k)}%</button>`).join("")}</div>
-  <div class="hdr"><span>Practiced % shown on tabs</span><span>Learned</span><span>Practiced</span><span>Revised</span></div>`+
-  D.ch[sf].map((c,i)=>{const v=cs(sf,i);return `<div class="row"><span>${esc(c[0])}${c[2]?`<em>${esc(c[2])}</em>`:""}</span>${[0,1,2].map(j=>`<input type="checkbox" aria-label="${["Learned","Practiced","Revised"][j]}" ${v[j]?"checked":""} onchange="cs('${sf}',${i})[${j}]=this.checked;save();render()">`).join("")}</div>`}).join("");
+function addTk(){const t=$("#kt").value.trim();if(!t)return;dd().tk.push({s:$("#ks").value,t,d:false});save();render()}
+function vHist(){
+  const ks=Object.keys(S.days).filter(k=>{const d=fix(S.days[k]);return k<=today()&&(Object.values(d.c).some(Boolean)||Object.keys(d.f).length||d.tk.length)}).sort().reverse().slice(0,30);
+  const avg=ks.length?Math.round(ks.reduce((a,k)=>a+pctOf(S.days[k]),0)/ks.length):0;
+  return `<div class="card top">${ring(avg,"Average completion",84)}<div><h2>Previous days</h2><div class="mut">Average completion over your last ${ks.length} logged days. Tap a day to view or fix it.</div></div></div>`+
+  (ks.map(k=>{const d=S.days[k],p=pctOf(d),n=Object.values(d.c).filter(Boolean).length,ch=[...new Set(Object.values(d.f).filter(Boolean))].join(", ");
+    return `<div class="card" style="padding:10px 14px"><div class="top"><div style="flex:1;min-width:150px"><b>${fd(k)}</b> <span class="mut">${n} blocks${d.cls?", live class":""}</span><div class="bar" style="margin:6px 0"><i style="width:${p}%"></i></div><div class="mut">${ch?esc(ch):"No chapters picked"}</div></div><b>${p}%</b><button onclick="setCur('${k}')">Open</button></div></div>`}).join("")||`<div class="card mut">No days logged yet. Tick blocks on the Day tab and they appear here.</div>`);
 }
+function vWk(){
+  const w=S.wt[wv]=S.wt[wv]||{P:0,C:0,M:0,note:""},end=addD(wv,6);
+  const done=s=>Object.entries(S.pd).filter(([k,d])=>k.startsWith(s+":")&&d>=wv&&d<=end).length;
+  let bl=0;for(let i=0;i<7;i++){const d=S.days[addD(wv,i)];if(d)bl+=Object.values(fix(d).c).filter(Boolean).length}
+  return `<div class="card"><h2>Week of ${fd(wv)} to ${fd(end)}</h2><div class="f"><button onclick="wv=addD(wv,-7);render()">&lt; Previous</button><button class="ghost" onclick="wv=wk(today());render()">This week</button><button onclick="wv=addD(wv,7);render()">Next &gt;</button></div>
+  <div class="mut">Weeks run Saturday to Friday. A chapter counts when you tick Practiced during the week.</div></div>
+  <div class="rings">${Object.entries(D.sub).map(([s,n])=>{const t=+w[s]||0,x=done(s);return `<div class="card" style="flex:1;min-width:140px;text-align:center">${ring(t?Math.round(x/t*100):0,n,84)}<div><b>${n}</b></div><div class="mut">${x} of </div><input type="number" min="0" max="20" value="${t}" style="width:70px" aria-label="${n} chapters target" onchange="S.wt['${wv}']['${s}']=+this.value;save();render()"><div class="mut">chapters</div></div>`}).join("")}</div>
+  <div class="card"><h2>This week's focus</h2><div class="f"><input type="text" id="wn" value="${esc(w.note||"")}" placeholder="e.g. Finish electrochem + 2 timed mocks" onchange="S.wt['${wv}'].note=this.value;save()"></div><div class="mut">Blocks ticked this week: <b>${bl}</b></div></div>`;
+}
+function vCh(){
+  const tot=Math.round(Object.keys(D.sub).reduce((a,s)=>a+pct(s),0)/3);
+  return `<div class="rings"><button style="cursor:default">${ring(tot,"Overall practiced",70)}<span>Overall</span></button>${Object.entries(D.sub).map(([k,v])=>`<button class="${k==sf?"on":""}" onclick="sf='${k}';render()">${ring(pct(k),v,70)}<span>${v}</span></button>`).join("")}</div>
+  <div class="mut" style="margin-top:8px">Rings show the share of chapters you have practiced.</div>
+  <div class="hdr"><span>${D.sub[sf]}</span><span>Learned</span><span>Practiced</span><span>Revised</span></div>`+
+  D.ch[sf].map((c,i)=>{const v=cs(sf,i);return `<div class="row"><span>${esc(c[0])}${c[2]?`<em>${esc(c[2])}</em>`:""}</span>${[0,1,2].map(j=>`<input type="checkbox" aria-label="${["Learned","Practiced","Revised"][j]}" ${v[j]?"checked":""} onchange="chk(${i},${j},this.checked)">`).join("")}</div>`}).join("");
+}
+function chk(i,j,v){cs(sf,i)[j]=v;const k=sf+":"+D.ch[sf][i][0];if(j==1){if(v)S.pd[k]=today();else delete S.pd[k]}save();render()}
 function vBl(){
-  return `<div class="card"><b>Missed or partial live classes</b><div class="f"><select id="bs">${subOpts()}</select><input type="text" id="bt" placeholder="Topic, e.g. Organic-03"><button class="pri" onclick="add('bl','bs','bt')">Add</button></div></div>`+
-  (S.bl.length?S.bl.map((b,i)=>`<div class="blk ${b.d?"dn":""}"><label><input type="checkbox" ${b.d?"checked":""} onchange="S.bl[${i}].d=this.checked;save();render()"><span class="t">${D.sub[b.s]}</span>${esc(b.t)}</label><button class="x" aria-label="Delete" onclick="del('bl',${i})">Delete</button></div>`).join(""):`<div class="card mut">Nothing in backlog. Add a topic whenever you miss part of a live class.</div>`);
+  return `<div class="card"><h2>Missed or partial live classes</h2><div class="f"><select id="bs">${subOpts()}</select><input type="text" id="bt" placeholder="Topic, e.g. Organic-03"><button class="pri" onclick="add('bl','bs','bt')">Add</button></div></div>`+
+  (S.bl.map((b,i)=>`<div class="blk ${b.d?"dn":""}"><label><input type="checkbox" ${b.d?"checked":""} onchange="S.bl[${i}].d=this.checked;save();render()"><span class="t">${D.sub[b.s]}</span>${esc(b.t)}</label><button class="x" onclick="del('bl',${i})">Delete</button></div>`).join("")||`<div class="card mut">Nothing in backlog. Add a topic whenever you miss part of a live class.</div>`);
 }
 function vEr(){
-  const o=S.er.filter(e=>!e.d).length;
-  return `<div class="card"><b>Error log</b> <span class="mut">${o} to re-attempt</span><div class="f"><select id="es">${subOpts()}</select><input type="text" id="et" placeholder="Question / topic"><select id="ec"><option>Concept</option><option>Formula</option><option>Calculation</option><option>Careless</option></select><button class="pri" onclick="add('er','es','et',{c:$('#ec').value})">Add</button></div><div class="mut">Review on Fridays. Tick when you get it right on re-attempt.</div></div>`+
-  S.er.map((e,i)=>`<div class="blk ${e.d?"dn":""}"><label><input type="checkbox" ${e.d?"checked":""} onchange="S.er[${i}].d=this.checked;save();render()"><span class="t">${D.sub[e.s]}</span>${esc(e.t)} <span class="mut">(${e.c})</span></label><button class="x" aria-label="Delete" onclick="del('er',${i})">Delete</button></div>`).join("");
+  return `<div class="card"><h2>Error log <span class="mut">${S.er.filter(e=>!e.d).length} to re-attempt</span></h2><div class="f"><select id="es">${subOpts()}</select><input type="text" id="et" placeholder="Question / topic"><select id="ec"><option>Concept</option><option>Formula</option><option>Calculation</option><option>Careless</option></select><button class="pri" onclick="add('er','es','et',{c:$('#ec').value})">Add</button></div><div class="mut">Review on Fridays. Tick when you get it right on re-attempt.</div></div>`+
+  S.er.map((e,i)=>`<div class="blk ${e.d?"dn":""}"><label><input type="checkbox" ${e.d?"checked":""} onchange="S.er[${i}].d=this.checked;save();render()"><span class="t">${D.sub[e.s]}</span>${esc(e.t)} <span class="mut">(${e.c})</span></label><button class="x" onclick="del('er',${i})">Delete</button></div>`).join("");
 }
 function add(k,sid,tid,x){const t=$("#"+tid).value.trim();if(!t)return;S[k].unshift(Object.assign({s:$("#"+sid).value,t,d:false},x||{}));save();render()}
 function del(k,i){S[k].splice(i,1);save();render()}
 function vEx(){
-  return `<div class="card"><b>Exam countdown</b> <span class="mut">(dates may change; edit data.js)</span><table>${D.exams.map(e=>`<tr><td>${esc(e[0])}</td><td>${e[1]}</td><td><b>${left(e[1])}</b> days</td></tr>`).join("")}</table></div>
-  <div class="card"><b>Exam scores</b> <div class="mut">Targets: ${D.targets.map(t=>t[0]+" "+t[1]+"%").join(", ")}</div>
+  return `<div class="card"><h2>Exam countdown</h2><div class="mut">Dates may change; edit them in data.js.</div><table>${D.exams.map(e=>`<tr><td>${esc(e[0])}</td><td class="mut">${e[1]}</td><td style="text-align:right"><b>${left(e[1])}</b> days</td></tr>`).join("")}</table></div>
+  <div class="card"><h2>Exam scores</h2><div class="mut">Targets: ${D.targets.map(t=>fd(t[0])+" "+t[1]+"%").join(", ")}</div>
   <div class="f"><input type="text" id="sn" placeholder="Exam name"><input type="number" id="sp" placeholder="%" min="0" max="100" style="width:80px"><button class="pri" onclick="addSc()">Add</button></div>
-  <table>${S.sc.map((s,i)=>`<tr><td>${esc(s.n)}</td><td>${esc(s.p)}%</td><td>${s.dt}</td><td><button class="x" aria-label="Delete" onclick="del('sc',${i})">Delete</button></td></tr>`).join("")}</table></div>
-  <div class="card"><b>Backup</b><div class="mut">Progress is saved in this browser only. Export weekly and keep the file (or commit it to your repo). Import to restore on another device.</div>
-  <div class="f"><button onclick="exp()">Export progress</button><input type="file" id="im" accept=".json" onchange="imp(this.files[0])"><button onclick="if(confirm('Erase all progress?')){S={};localStorage.removeItem('${K}');location.reload()}">Reset</button></div></div>`;
+  <table>${S.sc.map((s,i)=>`<tr><td>${esc(s.n)}</td><td><b>${esc(s.p)}%</b></td><td class="mut">${s.dt}</td><td><button class="x" onclick="del('sc',${i})">Delete</button></td></tr>`).join("")}</table></div>
+  <div class="card"><h2>Backup</h2><div class="mut">Progress is saved in this browser only. Export once a week and keep the file. Import restores it on any device.</div>
+  <div class="f"><button class="pri" onclick="exp()">Export progress</button><label class="btn ghost">Import progress<input type="file" accept=".json" hidden onchange="imp(this.files[0])"></label><button onclick="if(confirm('Erase all progress?')){S={};localStorage.removeItem('${K}');location.reload()}">Reset</button></div></div>`;
 }
-function addSc(){const n=$("#sn").value.trim(),p=$("#sp").value;if(!n||p==="")return;S.sc.unshift({n,p,dt:day()});save();render()}
-function exp(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:"application/json"}));a.download="study-progress-"+day()+".json";a.click()}
+function addSc(){const n=$("#sn").value.trim(),p=$("#sp").value;if(!n||p==="")return;S.sc.unshift({n,p,dt:today()});save();render()}
+function exp(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:"application/json"}));a.download="study-progress-"+today()+".json";a.click()}
 function imp(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(typeof o!="object"||!o.ch)throw 0;S=o;save();location.reload()}catch(e){alert("That file is not a valid progress export.")}};r.readAsText(f)}
 render();
 </script>
