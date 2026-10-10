@@ -9,7 +9,7 @@ window.DATA = {
   ],
   targets: [["2026-10-22", 50], ["2026-11-14", 65], ["2026-12-11", 75], ["2027-01-08", 80]],
   // ---- Settings ----
-  googleClientId: "",          // paste your Google OAuth client ID here to enable Drive sync (see README)
+  googleClientId: "69704196789-e0teg7cp6pki11vq4jpfqq8r270nlbis.apps.googleusercontent.com",          // paste your Google OAuth client ID here to enable Drive sync (see README)
   phoneLimit: 40,              // daily social-media limit in minutes
   paceExams: ["DU Science (KA)", "BUET"],
   // ---- Default routine (you can edit it inside the app: More > Routine) ----
