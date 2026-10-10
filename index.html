@@ -68,6 +68,10 @@ table{width:100%;border-collapse:collapse}td{padding:6px 4px;border-bottom:1px s
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--hd);color:#fff;padding:8px 16px;border-radius:999px;z-index:30;font-size:.9rem;max-width:90%}
 #toast[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){#vb{transition:none}}
+#nav button{position:relative}
+.bdg{position:absolute;top:0;left:calc(50% + 6px);background:var(--bad);color:#fff;font:700 .65rem system-ui;border-radius:999px;padding:0 6px;font-style:normal;line-height:1.4}
+.allck{display:flex;gap:10px;align-items:center;padding:10px 14px;margin:6px 0;cursor:pointer}
+@media(min-width:900px){#nav button .bdg{position:static;margin-left:auto}}
 </style>
 </head>
 <body>

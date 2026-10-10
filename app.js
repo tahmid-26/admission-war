@@ -1,7 +1,7 @@
 "use strict";
 const D=window.DATA,K="studyapp.v1";
 let S={};try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
-const fixS=()=>{["ch","days","pd","wt","rv","cc","tl","tc","ph"].forEach(k=>S[k]=S[k]||{});["bl","er","sc"].forEach(k=>S[k]=S[k]||[]);S.lim=S.lim||D.phoneLimit||40};fixS();
+const fixS=()=>{["ch","days","pd","wt","rv","cc","tl","tc","ph","sn","dis","exs","exm","ext","exd"].forEach(k=>S[k]=S[k]||{});["bl","er","sc","mx"].forEach(k=>S[k]=S[k]||[]);S.lim=S.lim||D.phoneLimit||40;S.exT=S.exT||D.examTime||"10:15"};fixS();
 let onSave=()=>{};
 const save=()=>{S.upd=Date.now();try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast("Could not save in this browser. Use Export.")}onSave()};
 window.getState=()=>S;
@@ -22,13 +22,19 @@ let cur=today(),wv=wk(today()),tab="today",mt="bl",sf="P",phd=today();
 /* routine */
 const defRt=()=>D.blocks.map((b,i)=>({id:"d"+i,t:b[0],e:b[1],l:b[2],s:b[3],m:b[4],k:b[5]}));
 const rt=()=>S.rt||defRt();
+const TYN={D:"Daily",W:"Weekly",M:"Monthly"};
+const EX=()=>D.myExams.map(e=>({id:e[0],date:e[1],name:e[2],ty:e[3],cv:e[4]})).concat(S.mx.map(e=>({id:e.id,date:e.date,name:e.name,ty:e.ty,cv:e.cv||[],cu:1}))).filter(e=>!S.exs[e.id]).sort((a,b)=>a.date.localeCompare(b.date));
+const exDur=e=>S.exm[e.ty]||D.examMin[e.ty]||60,exT=e=>S.ext[e.id]||S.exT,exOn=dt=>EX().filter(e=>e.date==dt);
+const rtd=dt=>rt().concat(exOn(dt).map(e=>({id:"x"+e.id,t:exT(e),e:hm(mm(exT(e))+exDur(e)),l:"Offline exam: "+e.name+" ("+exDur(e)+" min with commute)",s:"X",m:1,k:"Go and take the exam; Review mistakes and add to Error log"})));
 const steps=b=>{const a=(b.k||"").split(";").map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(.*?)\s*\[([LPRW])\]$/);return m?{t:m[1],g:m[2]}:{t:x}});return a.length?a:[{t:"Done"}]};
 const noPct=s=>s=="N"||s=="Z";
 const fix=d=>{d.s=d.s||{};d.f=d.f||{};d.tk=d.tk||[];d.dur=d.dur||195;d.sp=d.sp||1.5;return d};
 const dd=(s=cur)=>fix(S.days[s]=S.days[s]||{});
 const frac=(b,d)=>{const n=steps(b).length,a=d.s[b.id]||[];let c=0;for(let i=0;i<n;i++)if(a[i])c++;return c/n};
-const pctOf=d=>{fix(d);const R=rt().filter(b=>(!d.bad||b.m)&&!noPct(b.s));return R.length?Math.round(R.reduce((a,b)=>a+frac(b,d),0)/R.length*100):0};
+const pctOf=(d,dt)=>{fix(d);const R=rtd(dt).filter(b=>(!d.bad||b.m)&&!noPct(b.s));return R.length?Math.round(R.reduce((a,b)=>a+frac(b,d),0)/R.length*100):0};
 const watch=d=>Math.round(d.dur/d.sp);
+const endM=(b,d)=>b.s=="R"?mm(b.t)+watch(d):b.e?mm(b.e):mm(b.t)+30;
+const ov=(b,d)=>b.s!="X"&&rtd(cur).some(x=>x.s=="X"&&mm(b.t)<mm(x.e)&&endM(b,d)>mm(x.t));
 const tl=(b,d)=>b.s=="R"?b.t+"-"+hm(mm(b.t)+watch(d)):b.e?b.t+"-"+b.e:b.t;
 const grp=m=>m<720?"Morning":m<1020?"Afternoon":m<1260?"Evening":"Night";
 /* ui helpers */
@@ -46,12 +52,12 @@ const opt=(k,c)=>`<option value="${esc(k)}" ${k==c?"selected":""}>${esc(KEYS[k].
 const allOpts=c=>Object.entries(D.ch).map(([s,l])=>`<optgroup label="${D.sub[s]}">`+l.map(x=>opt(s+":"+x[0],c)).join("")+"</optgroup>").join("");
 const subOpts=()=>Object.entries(D.sub).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
 /* navigation */
-const NAV=[["today","📅","Day"],["hist","🕘","History"],["wk","🎯","Week"],["ch","📚","Chapters"],["more","☰","More"]];
+const NAV=[["today","📅","Day"],["inb","📥","Inbox"],["hist","🕘","History"],["wk","🎯","Week"],["ch","📚","Chapters"],["more","☰","More"]];
 const MT=[["bl","Backlog"],["er","Errors"],["ph","Phone"],["rt","Routine"],["ex","Exams"],["sy","Backup & sync"]];
 const go=t=>{tab=t;render();scrollTo(0,0)},setCur=v=>{if(v)cur=v;tab="today";render()};
 function render(){
-  $("#nav").innerHTML=NAV.map(n=>`<button class="${n[0]==tab?"on":""}" onclick="go('${n[0]}')"><span>${n[1]}</span>${n[2]}</button>`).join("");
-  const V={today:vDay,hist:vHist,wk:vWk,ch:vCh};
+  const bn=inbox().length;$("#nav").innerHTML=NAV.map(n=>`<button class="${n[0]==tab?"on":""}" onclick="go('${n[0]}')"><span>${n[1]}</span>${n[2]}${n[0]=="inb"&&bn?`<i class="bdg">${bn}</i>`:""}</button>`).join("");
+  const V={today:vDay,inb:vIn,hist:vHist,wk:vWk,ch:vCh};
   $("#app").innerHTML=tab=="more"?`<div class="seg">${MT.map(x=>`<button class="${x[0]==mt?"on":""}" onclick="mt='${x[0]}';render()">${x[1]}</button>`).join("")}</div>`+{bl:vBl,er:vEr,ph:vPh,rt:vRt,ex:vEx,sy:vSy}[mt]():V[tab]();
 }
 /* ---------- Day ---------- */
@@ -60,30 +66,38 @@ function chSel(b,d){const c=d.f[b.id]||"";let o;
   else if(b.s=="R"||b.s=="B")o=allOpts(c);else return"";
   return `<select aria-label="Chapter" onchange="pickCh('${b.id}',this.value)"><option value="">Chapter...</option>${o}</select>`}
 function pickCh(id,v){dd().f[id]=v;save()}
-function tog(id,i,v){const d=dd(),b=rt().find(x=>x.id==id),a=d.s[id]=d.s[id]||[];a[i]=v;save();render();const g=steps(b)[i].g;if(v&&g)offer(g,d.f[id])}
+function tog(id,i,v){const d=dd(),b=rtd(cur).find(x=>x.id==id),a=d.s[id]=d.s[id]||[];a[i]=v;save();render();const g=steps(b)[i].g;if(v&&g)offer(g,d.f[id])}
 function offer(g,key){if(!key){toast("Pick a chapter on this block to track it in Chapters.");return}
   const n=KEYS[key].n,tx={L:"as Learned",P:"as Practiced",R:"as Revised",W:"+1 ACS class watched"}[g];
   if(S.auto)return applyG(g,key);
   ask(`Update Chapters: mark <b>${esc(n)}</b> ${tx}?<br><label class="mut"><input type="checkbox" id="mda"> Apply automatically from now on</label>`,[["Yes",()=>{if($("#mda").checked){S.auto=1}applyG(g,key)},"pri"],["No"]])}
-function applyG(g,k){const c=cs(k);if(g=="L")c[0]=true;if(g=="P"){c[0]=c[1]=true;S.pd[k]=S.pd[k]||today()}if(g=="R")c[2]=true;if(g=="W"){const n=cc(k);n[0]++;c[0]=true}save();render();toast("Chapters updated")}
-const dueList=()=>KEYL.filter(k=>S.pd[k]&&(S.rv[k]||0)<3&&today()>=addD(S.pd[k],[3,7,14][S.rv[k]||0]));
+function applyQ(g,k){const c=cs(k);if(g=="L")c[0]=true;if(g=="P"){c[0]=c[1]=true;S.pd[k]=S.pd[k]||today()}if(g=="R")c[2]=true;if(g=="W"){const n=cc(k);n[0]++;c[0]=true}}
+function applyG(g,k){applyQ(g,k);save();render();toast("Chapters updated")}
+function checkAll(v){const d=dd(),R=rtd(cur).filter(b=>!d.bad||b.m),o=[];
+  R.forEach(b=>{const a=d.s[b.id]=d.s[b.id]||[];steps(b).forEach((x,i)=>{if(v&&!a[i]&&x.g&&d.f[b.id])o.push([x.g,d.f[b.id]]);a[i]=v})});d.tk.forEach(x=>x.d=v);save();render();
+  const u=[...new Map(o.map(x=>[x[0]+x[1],x])).values()];if(!u.length)return;
+  const go2=()=>{u.forEach(x=>applyQ(x[0],x[1]));save();render();toast("Chapters updated")};
+  if(S.auto)return go2();
+  const tx={L:"Learned",P:"Practiced",R:"Revised",W:"+1 class watched"};
+  ask("Update Chapters for the items you just checked?<br><span class='mut'>"+u.map(x=>esc(KEYS[x[1]].n)+": "+tx[x[0]]).join("<br>")+"</span>",[["Yes, update",go2,"pri"],["No"]])}
+const dueList=()=>KEYL.filter(k=>S.pd[k]&&(S.rv[k]||0)<3&&today()>=addD(S.pd[k],[3,7,14][S.rv[k]||0])&&!(S.sn[k]>today()));
 function revDone(i){const k=KEYL[i];S.rv[k]=(S.rv[k]||0)+1;cs(k)[2]=true;save();render()}
 function paceHtml(){const left0=KEYL.filter(k=>!cs(k)[1]).length,rec=Object.values(S.pd).filter(x=>x>=addD(today(),-14)).length/2;
   return (D.paceExams||[]).map(nm=>{const e=D.exams.find(x=>x[0]==nm);if(!e||left(e[1])<0)return"";const days=Math.max(1,left(e[1])-14),need=left0/(days/7);
     const ok=rec>=need;return `<div class="mut"><b>${esc(nm)}</b>: ${left0} chapters not yet practiced, ${days} days until 2 weeks before. Need <b>${need.toFixed(1)}/week</b>; you did ${rec.toFixed(1)}/week lately. <span class="${ok?"ok":"warn"}">${ok?"On pace.":rec?"Behind pace.":"No practice logged in 14 days."}</span></div>`}).join("")}
 function vDay(){
-  const d=dd(),R=rt().slice().sort((a,b)=>mm(a.t)-mm(b.t)),V=R.filter(b=>!d.bad||b.m),p=pctOf(d),t=today(),h=new Date().getHours();
+  const d=dd(),R=rtd(cur).slice().sort((a,b)=>mm(a.t)-mm(b.t)),V=R.filter(b=>!d.bad||b.m),p=pctOf(d,cur),t=today(),h=new Date().getHours();
   const gr=cur!=t?fd(cur)+(cur<t?" (past day)":" (planned)"):"Assalamu alaykum. Good "+(h<12?"morning":h<17?"afternoon":"evening")+".";
   const msg=p==100?"All done. Alhamdulillah, rest well.":p>=50?"More than halfway. One block at a time.":p>0?"Good start. Next block, then a short break.":cur>t?"Pick your chapters now so that day is easy.":"Start with just the first block. That is the hardest part.";
   const nx=D.exams.filter(e=>left(e[1])>=0).slice(0,3).map(e=>`${esc(e[0])} ${left(e[1])}d`).join(" | ");
-  let sch="",g="";
+  const all=V.length>0&&V.every(b=>frac(b,d)==1)&&d.tk.every(x=>x.d);let sch=`<label class="card allck"><input type="checkbox" ${all?"checked":""} onchange="checkAll(this.checked)"><b>Check all tasks for this day</b></label>`,g="";
   V.forEach(b=>{const gg=grp(mm(b.t));if(gg!=g){g=gg;sch+=`<div class="gh">${g}</div>`}
     const st=steps(b),a=d.s[b.id]||[],n=st.length,dn=st.filter((x,i)=>a[i]).length;
-    sch+=`<div class="blk ${dn==n?"dn":""}"><div class="bt"><span class="t">${tl(b,d)}</span><span class="bl">${esc(b.l)}</span>${n>1?`<span class="pc">${dn}/${n}</span>`:""}${b.s=="N"?`<button onclick="startT(25,'Nap over. Wake up!')">⏰ 25 min</button>`:""}${chSel(b,d)}</div><div class="steps">${st.map((x,i)=>`<label ${x.g?'title="Updates Chapters (asks first)"':""}><input type="checkbox" ${a[i]?"checked":""} onchange="tog('${b.id}',${i},this.checked)">${esc(x.t)}${x.g?" ↗":""}</label>`).join("")}</div></div>`});
+    sch+=`<div class="blk ${dn==n?"dn":""}"><div class="bt"><span class="t">${tl(b,d)}</span><span class="bl">${esc(b.l)}</span>${n>1?`<span class="pc">${dn}/${n}</span>`:""}${ov(b,d)?'<span class="pc" style="color:var(--bad)">overlaps exam</span>':""}${b.s=="N"?`<button onclick="startT(25,'Nap over. Wake up!')">⏰ 25 min</button>`:""}${chSel(b,d)}</div><div class="steps">${st.map((x,i)=>`<label ${x.g?'title="Updates Chapters (asks first)"':""}><input type="checkbox" ${a[i]?"checked":""} onchange="tog('${b.id}',${i},this.checked)">${esc(x.t)}${x.g?" ↗":""}</label>`).join("")}</div></div>`});
   const due=dueList();
   return `<div class="day"><div class="sumc card"><div class="top">${ring(p,"Day progress",96)}<div style="flex:1;min-width:190px"><div class="hi">${gr}</div><div class="mut">${msg}</div>
   <div class="f"><button onclick="setCur(addD(cur,-1))" aria-label="Previous day">&lt;</button><input type="date" value="${cur}" onchange="setCur(this.value)"><button onclick="setCur(addD(cur,1))" aria-label="Next day">&gt;</button><button class="ghost" onclick="setCur(today())">Today</button></div>
-  <div class="mut">${nx}</div></div></div>
+  <div class="mut">${nx}</div>${exOn(cur).map(e=>`<div class="warn"><b>Exam:</b> ${esc(e.name)} at ${exT(e)} (${exDur(e)} min)</div>`).join("")}</div></div>
   <label class="mut"><input type="checkbox" ${d.bad?"checked":""} onchange="dd().bad=this.checked;save();render()"> Hard day? Show only the must-do blocks</label></div>
   <div class="sch">${sch}</div>
   <div class="side"><div class="card"><h2>ACS class recording</h2><div class="f"><select aria-label="Class length" onchange="dd().dur=+this.value;save();render()">${[[180,"3 h"],[195,"3 h 15"],[210,"3 h 30"],[240,"4 h"]].map(o=>`<option value="${o[0]}" ${o[0]==d.dur?"selected":""}>${o[1]} class</option>`).join("")}</select><select aria-label="Speed" onchange="dd().sp=+this.value;save();render()">${[1,1.25,1.5,1.75,2].map(x=>`<option value="${x}" ${x==d.sp?"selected":""}>${x}x speed</option>`).join("")}</select></div><div class="mut">Watch time about <b>${dh(watch(d))}</b>.</div></div>
@@ -105,9 +119,9 @@ function beep(){try{const a=new(window.AudioContext||window.webkitAudioContext)(
 /* ---------- History ---------- */
 function vHist(){
   const ks=Object.keys(S.days).filter(k=>{const d=fix(S.days[k]);return k<=today()&&(Object.values(d.s).some(a=>a.some(Boolean))||d.tk.length)}).sort().reverse().slice(0,30);
-  const avg=ks.length?Math.round(ks.reduce((a,k)=>a+pctOf(S.days[k]),0)/ks.length):0;
+  const avg=ks.length?Math.round(ks.reduce((a,k)=>a+pctOf(S.days[k],k),0)/ks.length):0;
   return `<div class="card top">${ring(avg,"Average completion",84)}<div><h2>Previous days</h2><div class="mut">Average over your last ${ks.length} logged days. Open a day to view or fix it.</div></div></div><div class="two">`+
-  (ks.map(k=>{const d=S.days[k],p=pctOf(d),ch=[...new Set(Object.entries(d.f).filter(([id,v])=>v&&(d.s[id]||[]).some(Boolean)).map(([id,v])=>KEYS[v]?KEYS[v].n:""))].filter(Boolean).join(", "),mi=Object.values(S.tl[k]||{}).reduce((a,b)=>a+b,0),ph=S.ph[k];
+  (ks.map(k=>{const d=S.days[k],p=pctOf(d,k),ch=[...new Set(Object.entries(d.f).filter(([id,v])=>v&&(d.s[id]||[]).some(Boolean)).map(([id,v])=>KEYS[v]?KEYS[v].n:""))].filter(Boolean).join(", "),mi=Object.values(S.tl[k]||{}).reduce((a,b)=>a+b,0),ph=S.ph[k];
     return `<div class="card"><div class="top"><div style="flex:1;min-width:150px"><b>${fd(k)}</b> <span class="mut">${mi?dh(mi)+" timed":""}${ph?" · social "+ph.s+"m":""}</span><div class="bar" style="margin:6px 0"><i style="width:${p}%"></i></div><div class="mut">${ch?esc(ch):"No chapters picked"}</div></div><b>${p}%</b><button onclick="setCur('${k}')">Open</button></div></div>`}).join("")||'<div class="card mut">No days logged yet.</div>')+"</div>";
 }
 /* ---------- Week ---------- */
@@ -143,10 +157,34 @@ function vEr(){return `<div class="card"><h2>Error log <span class="mut">${S.er.
   S.er.map((e,i)=>`<div class="blk ${e.d?"dn":""}"><div class="bt"><label class="bl"><input type="checkbox" ${e.d?"checked":""} onchange="S.er[${i}].d=this.checked;save();render()"> <b>${D.sub[e.s]}</b> ${esc(e.t)} <span class="mut">(${e.c})</span></label><button class="x" onclick="del('er',${i})">Delete</button></div></div>`).join("")}
 function add(k,sid,tid,x){const t=$("#"+tid).value.trim();if(!t)return;S[k].unshift(Object.assign({s:$("#"+sid).value,t,d:false},x||{}));save();render()}
 function del(k,i){S[k].splice(i,1);save();render()}
-function vEx(){return `<div class="two"><div class="card"><h2>Exam countdown</h2><div class="mut">Dates may change; edit them in data.js.</div><table>${D.exams.map(e=>`<tr><td>${esc(e[0])}</td><td class="mut">${e[1]}</td><td style="text-align:right"><b>${left(e[1])}</b> days</td></tr>`).join("")}</table></div>
+function vEx(){const ex=EX().filter(e=>e.date>=addD(today(),-14));
+  return `<div class="card"><h2>My offline exams</h2><div class="mut">Set your exam batch start time and how long each type takes including commute (minutes). These appear on the Day screen and in the Inbox.</div>
+  <div class="f"><label class="mut">Start <input type="time" value="${S.exT}" onchange="S.exT=this.value||'10:15';save();render()"></label>${["D","W","M"].map(t=>`<label class="mut">${TYN[t]} <input type="number" min="15" step="5" style="width:72px" value="${S.exm[t]||D.examMin[t]}" onchange="S.exm['${t}']=+this.value;save();render()"></label>`).join("")}</div>
+  <table>${ex.map(e=>`<tr><td>${fd(e.date)}</td><td>${esc(e.name)}<div class="mut">${TYN[e.ty]}${e.cv.length?" · "+e.cv.map(k=>esc(KEYS[k].n)).join(", "):""}</div></td><td><input type="time" value="${exT(e)}" aria-label="Start time" onchange="S.ext['${e.id}']=this.value;save();render()"></td><td><button class="x" onclick="exSkip('${e.id}')">${e.cu?"Delete":"Skip"}</button></td></tr>`).join("")||'<tr><td class="mut">No upcoming exams. Add one below.</td></tr>'}</table>
+  <h2 style="margin-top:12px">Add an exam</h2><div class="f"><input type="date" id="xd" aria-label="Date"><input type="text" id="xn" placeholder="e.g. Weekly exam 10"><select id="xt" aria-label="Type"><option value="D">Daily</option><option value="W">Weekly</option><option value="M">Monthly</option></select></div>
+  <div class="f"><select id="xc" multiple size="4" aria-label="Chapters covered (optional)">${allOpts("")}</select><button class="pri" onclick="addEx()">Add exam</button></div><div class="mut">Optional: select the chapters it covers (hold Ctrl, or tap several) so the Inbox can warn you what is not practiced yet.</div>
+  <div class="f"><button onclick="S.exs={};save();render()">Restore skipped exams</button></div></div>
+  <div class="two"><div class="card"><h2>Admission exam countdown</h2><div class="mut">Dates may change; edit them in data.js.</div><table>${D.exams.map(e=>`<tr><td>${esc(e[0])}</td><td class="mut">${e[1]}</td><td style="text-align:right"><b>${left(e[1])}</b> days</td></tr>`).join("")}</table></div>
   <div class="card"><h2>Exam scores</h2><div class="mut">Targets: ${D.targets.map(t=>fd(t[0])+" "+t[1]+"%").join(", ")}</div><div class="f"><input type="text" id="sn" placeholder="Exam name"><input type="number" id="sp" placeholder="%" min="0" max="100" style="width:80px"><button class="pri" onclick="addSc()">Add</button></div>
-  <table>${S.sc.map((s,i)=>`<tr><td>${esc(s.n)}</td><td><b>${esc(s.p)}%</b></td><td class="mut">${s.dt}</td><td><button class="x" onclick="del('sc',${i})">Delete</button></td></tr>`).join("")}</table></div></div>`}
+  <table>${S.sc.map((x,i)=>`<tr><td>${esc(x.n)}</td><td><b>${esc(x.p)}%</b></td><td class="mut">${x.dt}</td><td><button class="x" onclick="del('sc',${i})">Delete</button></td></tr>`).join("")}</table></div></div>`}
+function addEx(){const dt=$("#xd").value,n=$("#xn").value.trim();if(!dt||!n)return;S.mx.push({id:"c"+Date.now(),date:dt,name:n,ty:$("#xt").value,cv:[...$("#xc").selectedOptions].map(o=>o.value)});save();render()}
+function exSkip(id){const i=S.mx.findIndex(x=>x.id==id);if(i>=0)S.mx.splice(i,1);else S.exs[id]=1;save();render()}
 function addSc(){const n=$("#sn").value.trim(),p=$("#sp").value;if(!n||p==="")return;S.sc.unshift({n,p,dt:today()});save();render()}
+/* ---------- Inbox ---------- */
+function inbox(){const t=today(),L=[],P=(id,ic,ti,su,ac)=>{if(!S.dis[id])L.push({id,ic,ti:esc(ti),su:esc(su),ac})};
+  dueList().forEach(k=>L.push({id:"rv"+k,ic:"🔁",ti:"Revise: "+esc(KEYS[k].n),su:D.sub[KEYS[k].s]+" · revision "+((S.rv[k]||0)+1)+" of 3",rv:1,ac:`<button class="pri" onclick="revDone(${ki(k)})">Done</button><button onclick="snz(${ki(k)})">Tomorrow</button>`}));
+  EX().forEach(e=>{const dl=left(e.date),np=e.cv.filter(k=>!cs(k)[1]).length;
+    if(dl>=0&&dl<=7)P("up"+e.id,"📝",(dl==0?"Today":dl==1?"Tomorrow":fd(e.date))+": "+e.name,TYN[e.ty]+" offline exam at "+exT(e)+", about "+exDur(e)+" min with commute."+(e.cv.length?" Covers "+e.cv.map(k=>KEYS[k].n).join(", ")+". "+(np?np+" of "+e.cv.length+" chapters not practiced yet.":"All covered chapters are practiced."):""),`<button class="pri" onclick="setCur('${e.date}')">Open day</button><button onclick="exSkip('${e.id}')">Not sitting</button>`);
+    if(dl<0&&dl>=-14&&!S.exd[e.id])P("sc"+e.id,"📊","Log your score: "+e.name,"Taken on "+fd(e.date)+". Enter your percentage.",`<input type="number" id="sx_${e.id}" min="0" max="100" placeholder="%" style="width:80px"><button class="pri" onclick="logSc('${e.id}')">Save</button>`)});
+  if(!S.lastExp||left(addD(S.lastExp,7))<=0)if(!/synced/.test(window.syncText||""))P("bk"+t,"💾","Back up your progress","No export in the last 7 days and Drive sync is not active.",`<button class="pri" onclick="exp()">Export now</button><button onclick="mt='sy';go('more')">Sync settings</button>`);
+  const ob=S.bl.filter(b=>!b.d).length;if(ob)P("bl"+t,"📌",ob+" backlog topic"+(ob>1?"s":"")+" waiting","Missed or partial classes to catch up on.",`<button onclick="mt='bl';go('more')">Open backlog</button>`);
+  const w=S.wt[wk(t)];if(!w||!(w.P||w.C||w.M))P("wt"+wk(t),"🎯","Set this week's targets","How many chapters to practice in Physics, Chemistry and Math.",`<button class="pri" onclick="wv=wk(today());go('wk')">Set targets</button>`);
+  return L}
+function vIn(){const L=inbox();
+  return `<div class="card"><h2>Inbox ${L.length?`<span class="mut">${L.length} item${L.length>1?"s":""}</span>`:""}</h2><div class="mut">Revision reminders, exam prep, score logging and housekeeping.</div></div>`+
+  (L.map(x=>`<div class="blk"><div class="bt"><span style="font-size:1.3rem">${x.ic}</span><span class="bl"><b>${x.ti}</b><em>${x.su}</em></span></div><div class="f">${x.ac}${x.rv?"":`<button class="x" onclick="dis('${x.id}')">Dismiss</button>`}</div></div>`).join("")||'<div class="card mut">All clear. Nothing needs your attention.</div>')}
+const dis=id=>{S.dis[id]=1;save();render()},snz=i=>{S.sn[KEYL[i]]=addD(today(),1);save();render()};
+function logSc(id){const v=$("#sx_"+id).value;if(v==="")return;const e=EX().find(x=>x.id==id);S.sc.unshift({n:e.name,p:v,dt:e.date});S.exd[id]=1;save();render()}
 /* ---------- Routine editor ---------- */
 const RS=[["","None"],["M","Math (chapter)"],["P","Physics (chapter)"],["C","Chemistry (chapter)"],["E","Error log"],["R","Class recording"],["B","Practice (any chapter)"],["N","Nap (timer)"],["Z","Sleep"]];
 function vRt(){const R=rt().slice().sort((a,b)=>mm(a.t)-mm(b.t));
