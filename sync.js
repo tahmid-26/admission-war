@@ -9,20 +9,21 @@ window.Sync=(function(){
   const setM=o=>{try{localStorage.setItem("studyapp.sync",JSON.stringify(Object.assign(M(),o)))}catch(e){}};
   const st=(t,bad)=>window.onSyncStatus&&window.onSyncStatus(t,bad);
   const clock=()=>new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  const tmo=(p,ms,m)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error(m)),ms))]);
   function gis(){return new Promise(res=>{if(window.google&&google.accounts)return res(true);const s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s)})}
   async function auth(interactive){
     if(!(await gis()))throw new Error("Google script blocked or offline");
-    return new Promise((ok,no)=>{
+    return tmo(new Promise((ok,no)=>{
       tc=tc||google.accounts.oauth2.initTokenClient({client_id:cid(),scope:SC,
         callback:r=>{if(r.error)return no(new Error(r.error));tok=r.access_token;exp=Date.now()+(r.expires_in-60)*1000;setM({ok:1});ok()},
         error_callback:e=>no(new Error(e&&e.type||"sign-in needed"))});
       tc.requestAccessToken({prompt:interactive?"":"none"});
-    });
+    }),interactive?90000:15000,interactive?"sign-in window timed out. Allow popups for this site and try again":"needs you to sign in again");
   }
   async function api(u,o){
     if(!tok||Date.now()>exp)await auth(false);
-    o=o||{};const r=await fetch(u,Object.assign({},o,{headers:Object.assign({Authorization:"Bearer "+tok},o.headers||{})}));
-    if(!r.ok)throw new Error("Drive error "+r.status);return r;
+    o=o||{};const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),30000);let r;try{r=await fetch(u,Object.assign({},o,{signal:ac.signal,headers:Object.assign({Authorization:"Bearer "+tok},o.headers||{})}))}catch(e){throw new Error(e.name=="AbortError"?"Drive did not respond (30 s). Check your connection":e.message)}finally{clearTimeout(tm)}
+    if(!r.ok){let m="";try{m=(await r.json()).error.message}catch(e){}throw new Error("Drive error "+r.status+(m?": "+m.slice(0,90):""))}return r;
   }
   async function find(){const r=await(await api("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id)&q="+encodeURIComponent("name='"+F+"'"))).json();return r.files&&r.files[0]&&r.files[0].id}
   async function pull(id){return(await api("https://www.googleapis.com/drive/v3/files/"+id+"?alt=media")).json()}
